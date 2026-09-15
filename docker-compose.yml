@@ -1,0 +1,10 @@
+services:
+  turnosapi:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: dev-secret-change-me
+      JWT_SECRET_KEY: dev-jwt-change-me
+    volumes:
+      - ./instance:/srv/app/instance
