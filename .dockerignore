@@ -1,7 +1,12 @@
 .git
 __pycache__
+*.py[cod]
+*.pyc
+*.pyo
 .pytest_cache/
 .venv/
 venv/
 instance/
 *.db
+*.sqlite3
+.env

@@ -20,6 +20,8 @@ def register():
 
     if not name or not email or not password:
         return jsonify(error="name, email y password son obligatorios"), 422
+    if len(name) > 120 or len(email) > 160 or len(password) > 128:
+        return jsonify(error="campos exceden la longitud máxima"), 422
     if not EMAIL_RE.match(email):
         return jsonify(error="email inválido"), 422
     if len(password) < 6:

@@ -61,6 +61,10 @@ class Service(db.Model):
 
 class Appointment(db.Model):
     __tablename__ = "appointments"
+    # Nota: sin UniqueConstraint(service_id, start_at) a propósito:
+    # el borrado es lógico (status= cancelado) y cancelar debe liberar
+    # el horario para reusarlo. El solapamiento se valida en _overlaps().
+    # Endurecer la condición de carrera requiere EXCLUDE de Postgres (roadmap).
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
@@ -74,12 +78,18 @@ class Appointment(db.Model):
     service = db.relationship("Service", back_populates="appointments")
 
     def to_dict(self) -> dict:
+        # start_at se guarda naive en UTC; se expone con sufijo +00:00
+        start = None
+        if self.start_at:
+            start = self.start_at.isoformat()
+            if not start.endswith("+00:00"):
+                start += "+00:00"
         return {
             "id": self.id,
             "user_id": self.user_id,
             "service_id": self.service_id,
             "service": self.service.name if self.service else None,
-            "start_at": self.start_at.isoformat() if self.start_at else None,
+            "start_at": start,
             "status": self.status,
             "notes": self.notes,
         }

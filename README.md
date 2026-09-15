@@ -7,7 +7,7 @@
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-API REST para gestionar **turnos y reservas** (barberías, consultorios, servicios). Registro y login con JWT, roles admin/usuario, alta de servicios y reserva de turnos con validación de solapamientos. Incluye 11 tests automatizados y deploy en un clic.
+API REST para gestionar **turnos y reservas** (barberías, consultorios, servicios). Registro y login con JWT, roles admin/usuario, alta de servicios y reserva de turnos con validación de solapamientos. Incluye 27 tests automatizados y deploy en un clic.
 
 ## Características
 
@@ -16,6 +16,8 @@ API REST para gestionar **turnos y reservas** (barberías, consultorios, servici
 - Validaciones: email, password ≥ 6, fechas futuras, servicio activo, **sin doble reserva** (409), cancelación libera el horario.
 - Respuestas JSON consistentes con códigos HTTP correctos (201/401/403/404/409/422).
 - 11 tests pytest (auth, permisos, reservas, conflictos, privacidad de datos).
+  Hoy la suite tiene 27 tests (autorización 403, ciclos de cancelación,
+  solapamientos parciales, validaciones 422, handlers y seed idempotente).
 - Sin estado en memoria: SQLite local, Postgres en producción vía `DATABASE_URL`.
 
 ## Stack
@@ -32,10 +34,14 @@ API REST para gestionar **turnos y reservas** (barberías, consultorios, servici
 ## Inicio rápido
 
 ```powershell
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 flask --app wsgi seed      # crea admin@turnos.local / admin123 + servicios ejemplo
 flask --app wsgi run       # http://localhost:5000
 ```
+Puertos: local Flask `:5000`, `python wsgi.py` y Docker `:8000`.
+El seed acepta `ADMIN_EMAIL`/`ADMIN_PASSWORD`; con `SEED_DEMO=true` (por defecto)
+la app se auto-puebla al arrancar si la BD está vacía (así la demo en Render
+funciona sola).
 
 ```powershell
 # Con Docker
@@ -44,6 +50,7 @@ docker compose up --build  # http://localhost:8000
 
 ```powershell
 # Tests
+pip install -r requirements-dev.txt
 pytest -q
 ```
 
@@ -85,6 +92,12 @@ $login.access_token
 ## Deploy en Render
 
 New → Web Service desde el repo (detecta `render.yaml`), o manual: Runtime Python, build `pip install -r requirements.txt`, start `gunicorn wsgi:app`.
+
+## Roadmap
+
+- Rate limiting en login/registro y paginación en listados.
+- Restricción `EXCLUDE` de Postgres contra doble reserva concurrente.
+- Horizonte de reserva, horario laboral y precio con `Numeric`.
 
 ## Licencia
 
