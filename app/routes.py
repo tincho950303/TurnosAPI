@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy.exc import IntegrityError
 
 from .models import Appointment, Service, User, db
 
@@ -93,7 +94,11 @@ def create_service():
         price=price,
     )
     db.session.add(service)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify(error="ya existe un servicio con ese nombre"), 409
     return jsonify(service.to_dict()), 201
 
 

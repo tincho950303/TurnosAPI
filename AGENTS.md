@@ -37,6 +37,9 @@ el [README](README.md) para la explicación funcional completa.
   `404` inexistente, `409` conflicto de negocio, `422` validación.
 - JWT `identity` es `str(user.id)`; siempre re-consultar el usuario en BD, nunca
   confiar en claims de rol. Envolver `int(identity)` en try/except.
+- El seed demo corre en el arranque de cada worker gunicorn: debe seguir siendo
+  idempotente y tolerante a carreras (rollback + reintento con backoff ante
+  `IntegrityError`/`OperationalError`). No poblar con `INSERT` sin re-chequeo.
 - Respuestas de error siempre JSON con clave `error`; no exponer trazas ni hashes.
 - Cambios pequeños y enfocados; no reformatees archivos no relacionados.
 - No commits, push ni ramas nuevas salvo petición explícita.

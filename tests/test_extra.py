@@ -259,3 +259,38 @@ def test_seed_idempotente(client):
 
         assert User.query.filter_by(email="admin@turnos.local").count() == 1
         assert Service.query.count() == 3
+
+
+def test_seed_con_datos_existentes_es_noop(client):
+    from app import _seed_demo_data
+    from app.models import Service, User, db
+
+    with client.application.app_context():
+        admin = User(name="Admin", email="admin@turnos.local", is_admin=True)
+        admin.set_password("otra-clave-distinta")
+        db.session.add(admin)
+        db.session.add(
+            Service(
+                name="Corte de cabello",
+                description="x",
+                duration_minutes=30,
+                price=1.0,
+            )
+        )
+        db.session.commit()
+        _seed_demo_data()
+        assert User.query.filter_by(email="admin@turnos.local").count() == 1
+        # no duplica el servicio existente ni agrega los otros
+        assert Service.query.count() == 1
+
+
+def test_crear_servicio_nombre_duplicado_409(client):
+    admin = _make_admin(client)
+    payload = {"name": "Corte", "duration_minutes": 30, "price": 100.0}
+    assert (
+        client.post("/api/services", json=payload, headers=_auth(admin)).status_code
+        == 201
+    )
+    res = client.post("/api/services", json=payload, headers=_auth(admin))
+    assert res.status_code == 409
+    assert "error" in res.get_json()

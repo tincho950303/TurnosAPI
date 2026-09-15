@@ -40,7 +40,7 @@ class Service(db.Model):
     __tablename__ = "services"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), unique=True, nullable=False)
     description = db.Column(db.String(500), default="")
     duration_minutes = db.Column(db.Integer, nullable=False, default=30)
     price = db.Column(db.Float, nullable=False, default=0.0)
